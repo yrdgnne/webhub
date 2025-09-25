@@ -3,7 +3,7 @@ export default function handler(req, res) {
   // Only allow GET from your domain
   const origin = req.headers.origin;
   const allowedHosts = [
-    'https://webhub.vercel.app',
+    'https://webhub-beige.vercel.app',
     'https://*.vercel.app', // during dev
     'http://localhost:3000'
   ];
