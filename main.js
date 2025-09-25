@@ -1,0 +1,129 @@
+import { TelegramClient } from 'https://cdn.jsdelivr.net/npm/gramjs@2.4.31/Telegram/index.js';
+import { StoreSession } from 'https://cdn.jsdelivr.net/npm/gramjs@2.4.31/sessions/StoreSession/index.js';
+
+// --- CONFIGURATION ---
+const API_ID = 20277861; // ← TG APP API from https://my.telegram.org/apps
+const API_HASH = '4071f73055c57bd576ea482158286ffa'; // ← API hash
+
+// --- DOM Elements ---
+const authInfo = document.getElementById('auth-info');
+const statusEl = document.getElementById('status');
+const loginBtn = document.getElementById('start-login');
+const channelsSection = document.getElementById('channels-section');
+const channelsList = document.getElementById('channels-list');
+
+// --- Telegram WebApp Integration ---
+if (window.Telegram?.WebApp) {
+  const initData = window.Telegram.WebApp.initData;
+  const user = window.Telegram.WebApp.initDataUnsafe?.user;
+
+  if (user) {
+    authInfo.innerHTML = `
+      <p><strong>Hello, ${user.first_name}!</strong></p>
+      <p>User ID: <code>${user.id}</code></p>
+      ${user.username ? `<p>Username: @${user.username}</p>` : ''}
+    `;
+  } else {
+    authInfo.innerHTML = `<p>Not launched from Telegram.</p>`;
+  }
+
+  window.Telegram.WebApp.ready();
+} else {
+  authInfo.innerHTML = `<p>This app must be opened inside Telegram.</p>`;
+  loginBtn.disabled = true;
+}
+
+// --- GramJS Session Setup ---
+let client = null;
+
+async function startLogin() {
+  loginBtn.disabled = true;
+  statusEl.textContent = "Initializing session...";
+
+  try {
+    const session = new StoreSession("tg_session"); // saved in localStorage
+    client = new TelegramClient(session, API_ID, API_HASH, {
+      connectionRetries: 5,
+      appVersion: "1.0",
+      deviceModel: "Web App",
+      systemVersion: "Web",
+    });
+
+    await client.start({
+      phoneNumber: async () => {
+        statusEl.textContent = "Enter phone number in console.";
+        return prompt("Enter your phone number:");
+      },
+      password: async () => {
+        return prompt("Enter 2FA password (if enabled):");
+      },
+      phoneCode: async () => {
+        return prompt("Enter SMS code:");
+      },
+      onError: (err) => {
+        console.error("Auth error:", err);
+        statusEl.textContent = `Error: ${err.message}`;
+      },
+    });
+
+    statusEl.textContent = "Connected! Fetching your channels...";
+    loadChannels();
+  } catch (err) {
+    console.error("Failed to connect:", err);
+    statusEl.textContent = `Failed: ${err.message}`;
+    loginBtn.disabled = false;
+  }
+}
+
+async function loadChannels() {
+  try {
+    const dialogs = await client.getDialogs({ limit: 100 });
+    const channelsAndGroups = dialogs.filter(d => d.isChannel || d.isGroup);
+
+    if (channelsAndGroups.length === 0) {
+      channelsList.innerHTML = `<li>No channels or groups found.</li>`;
+    } else {
+      channelsList.innerHTML = channelsAndGroups.map(d => {
+        const photoUrl = d.entity?.photo
+          ? client.getProfilePhotos(d.entity)
+              .then(photos => photos[0]?.sizes?.pop()?.download())
+              .catch(() => null)
+          : null;
+
+        return `
+          <li>
+            <img class="channel-photo" src="https://via.placeholder.com/40" alt="" />
+            <strong>${d.name}</strong>
+            <em>(${d.isChannel ? 'Channel' : 'Group'})</em>
+          </li>
+        `;
+      }).join('');
+    }
+
+    // Lazy-load images after DOM render
+    setTimeout(async () => {
+      const imgs = channelsList.querySelectorAll('img');
+      for (let i = 0; i < channelsAndGroups.length; i++) {
+        const d = channelsAndGroups[i];
+        if (d.entity?.photo) {
+          try {
+            const photo = await client.getProfilePhotos(d.entity, { limit: 1 });
+            if (photo[0]) {
+              const size = photo[0].sizes.pop();
+              imgs[i].src = await size.download();
+            }
+          } catch (e) { /* ignore */ }
+        }
+      }
+    }, 100);
+
+    channelsSection.style.display = 'block';
+    statusEl.textContent = `Loaded ${channelsAndGroups.length} communities.`;
+  } catch (err) {
+    console.error("Failed to load dialogs:", err);
+    statusEl.textContent = `Load failed: ${err.message}`;
+  }
+}
+
+// --- Event Listeners ---
+loginBtn.addEventListener('click', startLogin);
