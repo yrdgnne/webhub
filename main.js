@@ -155,7 +155,7 @@ async function loadChannels() {
     const dialogs = await mtproto.call('messages.getDialogs', {limit:50});
     console.log("Dialogs:",dialogs);
     if(!dialogs.chats|| dialogs.chats.length ===0){
-      channelsList.innerHTML ='<li> No channels or groups found.</li>
+      channelsList.innerHTML ='<li> No channels or groups found.</li>;
     } else{
       channelsList.innnerHTML = dialogs.chat.map(chat =>'
         <li>
