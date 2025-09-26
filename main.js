@@ -158,12 +158,7 @@ async function loadChannels() {
       channelsList.innerHTML ='<li> No channels or groups found.</li>';
     } else{
       channelsList.innnerHTML = dialogs.chats.map(
-        chat =>
-         <li>
-          <img class="channel-photo" src= "https://via.placeholder.com/40" alt=""/>
-          <strong>${chat.title || "Unnamed"}</strong>
-          <em>(${chat._})</em>
-        </li>).join('');
+        chat =>'<li><img class="channel-photo" src= "https://via.placeholder.com/40" alt=""/><strong>${chat.title || "Unnamed"}</strong><em>(${chat._})</em></li>').join('');
     }
     channelsSection.style.display ='block';
     statusEl.textContent ='Loaded ${dialogs.chats.length} communities. ';
