@@ -1,5 +1,6 @@
-import { TelegramClient } from 'https://cdn.jsdelivr.net/npm/gramjs@2.4.31/Telegram/index.js';
-import { StoreSession } from 'https://cdn.jsdelivr.net/npm/gramjs@2.4.31/sessions/StoreSession/index.js';
+//import { TelegramClient } from 'https://cdn.jsdelivr.net/npm/gramjs@2.4.31/Telegram/index.js';
+//import { StoreSession } from 'https://cdn.jsdelivr.net/npm/gramjs@2.4.31/sessions/StoreSession/index.js';
+import { StoreSession } from 'https://cdn.jsdelivr.net/npm/@mtproto/core/+esm';
 
 // --- CONFIGURATION ---
 /*
@@ -24,7 +25,8 @@ async function loadConfig() {
 }
 
 */
-const API_ID = 20277861; // ← TG APP API from https://my.telegram.org/apps
+
+const api =new MTProto({ API_ID = 20277861; // ← TG APP API from https://my.telegram.org/apps
 const API_HASH = '4071f73055c57bd576ea482158286ffa'; // ← API hash
 
 
@@ -57,12 +59,42 @@ if (window.Telegram?.WebApp) {
 }
 
 // --- GramJS Session Setup ---
-let client = null;
+//let client = null;
+
+//--- Create Client ---
+const mtproto =new MTProto({
+  api_id:API_ID,
+  api_hash:API_HASH,
+});
+
+// -- login flow --
+
 
 async function startLogin() {
   loginBtn.disabled = true;
   statusEl.textContent = "Initializing session...";
 
+  try{
+    // send codeto user 
+    const phone = prompt("Enter your Phone number (with country code):");
+    const {phone_code_hash } = await mtproto.call('auth.sendCode',{phone_number:phone,
+                                                                  settings:{_: 'codeSettings'},
+                                                                  });
+    const code = prompt("Enter the code you received:");
+    const signIn = await mtproto.call('auth.signIn',{
+      phone_number: phone,
+      phone_code_hash: phone_code_hash,
+      phone_code: phone_code,
+    });
+    console.log("SSigned in:",signIn);
+    statusEl.textContext = "Connected! Fetching your channels ...";
+    await loadChannels();
+  }catch(err){
+    console.error("Login failed:",err);
+    ststusEl.textContent ='Failed: ${err.message}';
+    loginBtn.disabled=false;
+  }
+ /*
   try {
     const session = new StoreSession("tg_session"); // saved in localStorage
     client = new TelegramClient(session, API_ID, API_HASH, {
@@ -96,9 +128,34 @@ async function startLogin() {
     statusEl.textContent = `Failed: ${err.message}`;
     loginBtn.disabled = false;
   }
+    */
 }
 
+// -- load channels
 async function loadChannels() {
+  try{
+    const dialogs = await mtproto.call('messages.getDialogs', {limit:50});
+    console.log("Dialogs:",dialogs);
+    if(!dialogs.chats|| dialogs.chats.length ===0){
+      channelsList.innerHTML ='<li> No channels or groups found.</li>
+    } else{
+      channelsList.innnerHTML = dialogs.chat.map(chat =>'
+        <li>
+          <img class="channel-photo" srs= "https://via.placeholder.com/40" alt=""/>
+          <strong>${chat.title || "Unnamed"}</strong>
+          <em>(${chat._})</em>
+        </li>
+        ').join('');
+    }
+    channelsSection.style.display ='block';
+    statusEl.textContent ='Loaded ${dialogs.chats.lenght} communities.';
+  } catch(err){
+    console.error("Failed to load dialogs:",err);
+    statusEl.textContent ='Load failed:${err.message}';
+  }
+  
+  
+ /*
   try {
     const dialogs = await client.getDialogs({ limit: 100 });
     const channelsAndGroups = dialogs.filter(d => d.isChannel || d.isGroup);
@@ -135,8 +192,10 @@ async function loadChannels() {
               const size = photo[0].sizes.pop();
               imgs[i].src = await size.download();
             }
-          } catch (e) { /* ignore */ }
-        }
+          } catch (e) { */
+          /* ignore */ 
+          //}
+       /* }
       }
     }, 100);
 
@@ -146,6 +205,7 @@ async function loadChannels() {
     console.error("Failed to load dialogs:", err);
     statusEl.textContent = `Load failed: ${err.message}`;
   }
+  */
 }
 
 // --- Event Listeners ---
