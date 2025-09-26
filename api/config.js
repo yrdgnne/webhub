@@ -5,7 +5,7 @@ export default function handler(req, res) {
   const allowedHosts = [
     'https://webhub-beige.vercel.app',
     'https://*.vercel.app', // during dev
-    'http://localhost:3000'
+    //'http://localhost:3000'
   ];
 
   if (!allowedHosts.some(host => host === origin || (host.endsWith('vercel.app') && origin?.endsWith('.vercel.app')))) {
