@@ -1,6 +1,6 @@
 //import { TelegramClient } from 'https://cdn.jsdelivr.net/npm/gramjs@2.4.31/Telegram/index.js';
 //import { StoreSession } from 'https://cdn.jsdelivr.net/npm/gramjs@2.4.31/sessions/StoreSession/index.js';
-import { StoreSession } from 'https://cdn.jsdelivr.net/npm/@mtproto/core/+esm';
+import { MTProto } from 'https://cdn.jsdelivr.net/npm/@mtproto/core/+esm';
 
 // --- CONFIGURATION ---
 /*
