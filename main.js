@@ -26,7 +26,7 @@ async function loadConfig() {
 
 */
 
-const api =new MTProto({ API_ID = 20277861; // ← TG APP API from https://my.telegram.org/apps
+const api = API_ID = 20277861; // ← TG APP API from https://my.telegram.org/apps
 const API_HASH = '4071f73055c57bd576ea482158286ffa'; // ← API hash
 
 
@@ -38,6 +38,23 @@ const channelsSection = document.getElementById('channels-section');
 const channelsList = document.getElementById('channels-list');
 
 // --- Telegram WebApp Integration ---
+if (window.Telegram?.WebApp){
+  const user = window.Telegram.WebApp.initDataUnsafe?.user;
+  if (user) {
+    authInfo.innerHTML = `
+      <p><strong>Hello, ${user.first_name}!</strong></p>
+      <p>User ID: <code>${user.id}</code></p>
+      ${user.username ? `<p>Username: @${user.username}</p>` : ''}
+    `;
+  } else {
+    authInfo.innerHTML = `<p>Not launched from Telegram.</p>`;
+  }
+  window.Telegram.WebApp.ready();
+} else {
+  authInfo.innerHTML = `<p>This app must be opened inside Telegram.</p>`;
+  loginBtn.disabled = true;
+}
+/*
 if (window.Telegram?.WebApp) {
   const initData = window.Telegram.WebApp.initData;
   const user = window.Telegram.WebApp.initDataUnsafe?.user;
@@ -59,6 +76,7 @@ if (window.Telegram?.WebApp) {
 }
 
 // --- GramJS Session Setup ---
+*/
 //let client = null;
 
 //--- Create Client ---
