@@ -2,7 +2,7 @@ import { TelegramClient } from 'https://cdn.jsdelivr.net/npm/gramjs@2.4.31/Teleg
 import { StoreSession } from 'https://cdn.jsdelivr.net/npm/gramjs@2.4.31/sessions/StoreSession/index.js';
 
 // --- CONFIGURATION ---
-
+/*
 let API_ID = null;
 let API_HASH = null;
 
@@ -22,6 +22,12 @@ async function loadConfig() {
     return false;
   }
 }
+
+*/
+const API_ID = 20277861; // ← TG APP API from https://my.telegram.org/apps
+const API_HASH = '4071f73055c57bd576ea482158286ffa'; // ← API hash
+
+
 // --- DOM Elements ---
 const authInfo = document.getElementById('auth-info');
 const statusEl = document.getElementById('status');
