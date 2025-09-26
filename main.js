@@ -155,18 +155,18 @@ async function loadChannels() {
     const dialogs = await mtproto.call('messages.getDialogs', {limit:50});
     console.log("Dialogs:",dialogs);
     if(!dialogs.chats|| dialogs.chats.length ===0){
-      channelsList.innerHTML ='<li> No channels or groups found.</li>;
+      channelsList.innerHTML ='<li> No channels or groups found.</li>';
     } else{
-      channelsList.innnerHTML = dialogs.chat.map(chat =>'
-        <li>
-          <img class="channel-photo" srs= "https://via.placeholder.com/40" alt=""/>
+      channelsList.innnerHTML = dialogs.chats.map(
+        chat =>
+         <li>
+          <img class="channel-photo" src= "https://via.placeholder.com/40" alt=""/>
           <strong>${chat.title || "Unnamed"}</strong>
           <em>(${chat._})</em>
-        </li>
-        ').join('');
+        </li>).join('');
     }
     channelsSection.style.display ='block';
-    statusEl.textContent ='Loaded ${dialogs.chats.lenght} communities.';
+    statusEl.textContent ='Loaded ${dialogs.chats.length} communities. ';
   } catch(err){
     console.error("Failed to load dialogs:",err);
     statusEl.textContent ='Load failed:${err.message}';
@@ -210,7 +210,8 @@ async function loadChannels() {
               const size = photo[0].sizes.pop();
               imgs[i].src = await size.download();
             }
-          } catch (e) { */
+          } catch (e) { 
+          
           /* ignore */ 
           //}
        /* }
