@@ -1,5 +1,28 @@
 // api/config.js
 export default function handler(req, res) {
+  res.status(200).json({
+    apiId: process.env.TG_API_ID,
+    apiHash: process.env.TG_API_HASH
+  });
+}
+
+async function loadConfig() {
+  try {
+    const res = await fetch('/api/config');
+    const data = await res.json();
+    API_ID = data.apiId;
+    API_HASH = data.apiHash;
+    return true;
+  } catch (err) {
+    console.error("Failed to load config:", err);
+    document.getElementById("status").textContent = "Configuration error.";
+    return false;
+  }
+}
+
+
+/*
+export default function handler(req, res) {
   // Only allow GET from your domain
   const origin = req.headers.origin;
   const allowedHosts = [
@@ -27,3 +50,4 @@ export default function handler(req, res) {
     timestamp: Date.now()
   });
 }
+*/
