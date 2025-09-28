@@ -1,70 +1,54 @@
-let client = null;
-let API_ID = 20277861; 
-let API_HASH = "4071f73055c57bd576ea482158286ffa"; 
-
-async function initClient() {
-  const statusEl = document.getElementById("status");
-
-  client = new TdClient({
-    clientId: 1,
-    logVerbosityLevel: 0,
-    jsLogVerbosityLevel: 'error',
-    mode: 'wasm',
-    wasmUrl: 'https://cdn.jsdelivr.net/npm/tdweb@1.8.0/td_web.wasm',
-    fallbackWasmUrl: 'https://unpkg.com/tdweb@1.8.0/td_web.wasm',
-    nativeLibUrl: 'https://cdn.jsdelivr.net/npm/tdweb@1.8.0/td_native.wasm',
-  });
-
-  client.use(new TdAuthParameters({
-    apiId: API_ID,
-    apiHash: API_HASH,
-    systemLanguageCode: 'en',
-    deviceModel: 'Web App',
-    systemVersion: 'Web',
-    applicationVersion: '1.0'
-  }));
-
-  client.onUpdate(update => {
-    if (update['@type'] === 'updateAuthorizationState') {
-      handleAuthState(update.authorizationState);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChannelSites</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://unpkg.com/tdweb@1.8.0"></script>
+  <script type="module" src="main.js"></script>
+  <style>
+    body { font-family: -apple-system, sans-serif; margin: 20px; background: #f7f8fa; }
+    .container { max-width: 800px; margin: 0 auto; }
+    .card {
+      background: white;
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin: 12px 0;
     }
-  });
-}
+    button {
+      background: #0088cc;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    ul { list-style: none; padding: 0; }
+    li { padding: 10px 0; border-bottom: 1px solid #eee; }
+    .loading { color: #7f8c8d; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌐 ChannelSites</h1>
+    <p>Your communities, beautifully reimagined.</p>
 
-function handleAuthState(state) {
-  const statusEl = document.getElementById("status");
-  switch (state['@type']) {
-    case 'authorizationStateWaitPhoneNumber':
-      const phone = prompt("Enter your phone number:");
-      if (phone) {
-        client.execute({ '@type': 'setAuthenticationPhoneNumber', phoneNumber: phone });
-      }
-      break;
-    case 'authorizationStateWaitCode':
-      const code = prompt("Enter SMS code:");
-      if (code) {
-        client.execute({ '@type': 'checkAuthenticationCode', code });
-      }
-      break;
-    case 'authorizationStateReady':
-      statusEl.textContent = "Connected!";
-      loadChats();
-      break;
-  }
-}
+    <div id="auth-info" class="card">
+      <p>Loading...</p>
+    </div>
 
-async function loadChats() {
-  const result = await client.execute({
-    '@type': 'getChats',
-    chatList: { '@type': 'chatListMain' },
-    limit: 20
-  });
-  console.log(result);
-}
+    <div id="login-section" class="card">
+      <button id="start-client">🚀 Start Client</button>
+      <p id="status" class="loading">Ready.</p>
+    </div>
 
-document.addEventListener('DOMContentLoaded', async () => {
-  await initClient();
-  document.getElementById("start-client").onclick = () => {
-    client.execute({ '@type': 'getAuthorizationState' });
-  };
-});
+    <div id="channels-section" style="display:none;" class="card">
+      <h2>My Channels & Groups</h2>
+      <ul id="channels-list"></ul>
+    </div>
+  </div>
+</body>
+</html>
